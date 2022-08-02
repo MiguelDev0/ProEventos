@@ -8,6 +8,7 @@ using ProEventos.Application.Contratos;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
+using ProEventos.Application.Dtos;
 
 namespace ProEventos.API.Controllers
 {
@@ -28,8 +29,8 @@ namespace ProEventos.API.Controllers
             try
             {
                 var eventos = await _eventosService.GetAllEventosAsync(true);
-                if(eventos == null) return NotFound("Nenhum evento encontrado.");
-
+                if(eventos == null) return NoContent();
+                
                 return Ok(eventos);
             }
             catch (Exception ex)
@@ -44,7 +45,7 @@ namespace ProEventos.API.Controllers
             try
             {
                 var eventos = await _eventosService.GetEventoByIdAsync(id, true);
-                if(eventos == null) return NotFound("Evento por id não encontrado");
+                if(eventos == null) return NoContent();                
 
                 return Ok(eventos);
             }
@@ -60,7 +61,7 @@ namespace ProEventos.API.Controllers
             try
             {
                 var eventos = await _eventosService.GetAllEventosByTemasAsync(tema, true);
-                if(eventos == null) return NotFound("Eventos por tema não encontrados.");
+                if(eventos == null) return NoContent();                
 
                 return Ok(eventos);
             }
@@ -71,12 +72,12 @@ namespace ProEventos.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(Evento model)
+        public async Task<IActionResult> Post(EventoDto model)
         {
             try
             {
                 var eventos = await _eventosService.AddEventos(model);
-                if(eventos == null) return BadRequest("Eventos ao tentar adicionar evento.");
+                if(eventos == null) return NoContent();
 
                 return Ok(eventos);
             }
@@ -88,12 +89,12 @@ namespace ProEventos.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Evento model)
+        public async Task<IActionResult> Put(int id, EventoDto model)
         {
             try
             {
                 var eventos = await _eventosService.UpdateEvento(id, model);
-                if(eventos == null) return BadRequest("Eventos ao tentar adicionar evento.");
+                if(eventos == null) return NoContent();
 
                 return Ok(eventos);
             }
@@ -109,7 +110,12 @@ namespace ProEventos.API.Controllers
         {
             try
             {
-                return await _eventosService.DeleteEvento(id) ? Ok("Deletado") : BadRequest("Evento não deletado");
+                var evento = await _eventosService.GetEventoByIdAsync(id, true);
+                if(evento == null) return NoContent();
+
+                return await _eventosService.DeleteEvento(id) ?
+                     Ok("Deletado") : 
+                     throw new Exception("Ocorreu um problema não específico ao tentar deletar Evento.");
             }
             catch (Exception ex)
             {
